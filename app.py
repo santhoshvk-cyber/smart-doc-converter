@@ -3,7 +3,8 @@ import os
 import uuid
 from werkzeug.utils import secure_filename
 from pdf2docx import Converter
-from docx2pdf import convert as docx_to_pdf
+import pypandoc
+output = pypandoc.convert_file("yourfile.docx", "pdf", outputfile="yourfile.pdf")
 import logging
 import time
 
