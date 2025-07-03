@@ -5,7 +5,7 @@ import logging
 import time
 from werkzeug.utils import secure_filename
 from pdf2docx import Converter
-import pypandoc
+import aspose.words as aw
 
 # ========== Config ==========
 UPLOAD_FOLDER = 'uploads'
@@ -37,6 +37,10 @@ def clean_old_files(folder, age_limit=600):
         path = os.path.join(folder, f)
         if os.path.isfile(path) and now - os.path.getmtime(path) > age_limit:
             os.remove(path)
+
+def convert_docx_to_pdf(input_path, output_path):
+    doc = aw.Document(input_path)
+    doc.save(output_path, aw.SaveFormat.PDF)
 
 # ========== Routes ==========
 @app.route('/')
@@ -70,13 +74,13 @@ def convert_file():
 
     try:
         if conversion_type == 'word-to-pdf':
-            # Use pypandoc instead of docx2pdf
-            pypandoc.convert_file(input_path, 'pdf', outputfile=output_path)
+            convert_docx_to_pdf(input_path, output_path)
 
         elif conversion_type == 'pdf-to-word':
             cv = Converter(input_path)
             cv.convert(output_path, start=0, end=None)
             cv.close()
+
         else:
             flash('Invalid conversion type.')
             return redirect(url_for('index'))
@@ -85,7 +89,7 @@ def convert_file():
 
     except Exception as e:
         logging.error(f"Conversion failed: {e}")
-        flash('Conversion failed. Please try a different file.')
+        flash('Conversion failed. Please try again with a valid file.')
         return redirect(url_for('index'))
 
 @app.route('/download/<filename>')
